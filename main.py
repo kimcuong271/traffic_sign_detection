@@ -626,7 +626,7 @@ def load_sillnet(weights):
     return model_sillnet
 
 
-def make_prediction(model_1, model, img_path='', save_path='data\predicted'):
+def make_prediction(model_1, model, img_path='', save_path='main/data/predicted'):
     im = imageio.imread(img_path)
     path = img_path.split('.')[0]
     img_name = img_path.split('.')[-1] + "_predicted.jpg"
