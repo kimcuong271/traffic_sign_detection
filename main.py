@@ -36,7 +36,6 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from streamlit_player import st_player
 from gtts import gTTS
 import math
 import gdown
