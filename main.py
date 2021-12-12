@@ -629,7 +629,9 @@ def load_sillnet(weights):
 def make_prediction(model_1, model, img_path='', save_path='data\predicted'):
     im = imageio.imread(img_path)
     path = img_path.split('.')[0]
-    img_name = img_path.split('.')[-1] + "predicted.jpg"
+    img_name = img_path.split('.')[-1] + "_predicted.jpg"
+    if not os.path.isdir('new_folder'):
+        os.mkdir(path, 777)
     predict_path = os.path.join(save_path, img_name)
     pred = model_1(im)
     pred_df = pred.pandas().xyxy[0]
