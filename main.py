@@ -631,7 +631,8 @@ def make_prediction(model_1, model, img_path='', save_path='data\predicted'):
     path = img_path.split('.')[0]
     img_name = img_path.split('.')[-1] + "_predicted.jpg"
     if not os.path.isdir('new_folder'):
-        os.mkdir(path, 777)
+        mode = 0o777
+        os.mkdir(path, mode)
     predict_path = os.path.join(save_path, img_name)
     pred = model_1(im)
     pred_df = pred.pandas().xyxy[0]
