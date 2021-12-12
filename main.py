@@ -39,6 +39,40 @@ import torch.nn.functional as F
 from streamlit_player import st_player
 from gtts import gTTS
 import math
+import gdown
+
+# url = 'https://drive.google.com/uc?id=1kznuazx4fO8starp_JONzAeAtWjRnZ3A'
+# output = 'D:/best(4).pt'
+# gdown.download(url, output, quiet=True)
+
+def download_file_from_google_drive(id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params = { 'id' : id }, stream = True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = { 'id' : id, 'confirm' : token }
+        response = session.get(URL, params = params, stream = True)
+
+    save_response_content(response, destination)    
+
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+
+    return None
+
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
 def copy_attr(a, b, include=(), exclude=()):
     # Copy attributes from b to a, options to only include [...] and to exclude [...]
     for k, v in b.__dict__.items():
@@ -124,7 +158,6 @@ class stn(nn.Module):
         grid = F.affine_grid(theta, x.size())
         x = F.grid_sample(x, grid)
         return x
-
 
 class SillNet(nn.Module):
     def __init__(self, nc, input_size, class_train, class_test, extract_chn=None, classify_chn=None, param1=None, param2=None, param3=None, param4=None, param_mask=None):
@@ -637,7 +670,27 @@ def make_prediction(model_1, model, img_path='', save_path='data\predicted'):
     imageio.imwrite(predict_path, im)
     final_result = ','.join(results)
     return predict_path, final_result
-
+@st.cache(suppress_st_warning=True)
+def load_models():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    f_checkpoint = "best(4).pt"
+    f_checkpoint_1 = "gtsrb2gtsrb_2021-11-27-144458_best.pth"
+    listfile = os.listdir(dir_path)
+    
+    if f_checkpoint not in listfile:
+        with st.spinner("Downloading model... this may take awhile! \n Don't stop it!"):
+            url = 'https://drive.google.com/uc?id=1kznuazx4fO8starp_JONzAeAtWjRnZ3A'
+            output = 'best(4).pt'
+            gdown.download(url, output, quiet=True)
+    if f_checkpoint_1 not in listfile:
+        with st.spinner("Downloading model2... this may take awhile! \n Don't stop it!"):
+            #download_file_from_google_drive('1i2E951VghoPQn-N742n8zE0_i3jPO-yy', f_checkpoint_1)
+            url = 'https://drive.google.com/uc?id=1i2E951VghoPQn-N742n8zE0_i3jPO-yy'
+            output = "gtsrb2gtsrb_2021-11-27-144458_best.pth"
+            gdown.download(url, output, quiet=True)
+    model_1 = torch.hub.load('ultralytics/yolov5', 'custom', path=f_checkpoint, force_reload=True) # default
+    model = load_sillnet(f_checkpoint_1)
+    return model_1,model
 
 st.set_page_config(
     page_title="Traffic Sign Detection🚦",
@@ -779,9 +832,10 @@ inferenceButton = st.empty()
 
 if is_valid:
     if inferenceButton.button('Launch the Detection!'):
-        model_1 = torch.hub.load('ultralytics/yolov5', 'custom', path='best(4).pt', force_reload=True) # default
-        model = load_sillnet('sillnet/gtsrb2gtsrb_2021-11-27-144458_best.pth')
+        # model_1 = torch.hub.load('ultralytics/yolov5', 'custom', path='best(4).pt', force_reload=True) # default
+        # model = load_sillnet('sillnet/gtsrb2gtsrb_2021-11-27-144458_best.pth')
         with st_stdout("info"):
+            model_1,model = load_models()
             predicted_img, results = make_prediction(model_1, model, opt.source)
             i=0
             speech = f"Please Attend a head Traffic Sign {results}"
