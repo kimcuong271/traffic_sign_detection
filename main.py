@@ -807,7 +807,7 @@ inferenceSource = str(st.sidebar.selectbox('Select Source to detect:',
                       options=list(CHOICES.keys()), format_func=_format_func))
 
 if inferenceSource == '0':
-    uploaded_file = st.sidebar.file_uploader("Upload Image", type=['png', 'jpeg', 'jpg'])
+    uploaded_file = st.sidebar.file_uploader("Upload Image", type=['jpg'])
     if uploaded_file is not None:
         is_valid = True
         with st.spinner(text='In progress'):
